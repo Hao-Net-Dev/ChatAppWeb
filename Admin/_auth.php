@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../Handler/db.php';
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
 	http_response_code(403);

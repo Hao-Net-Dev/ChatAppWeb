@@ -3,7 +3,7 @@ session_start();
 
 // Kiểm tra xem người dùng đã đăng nhập chưa
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 ?>
@@ -44,7 +44,7 @@ if (!isset($_SESSION['user_id'])) {
 </head>
 <body>
 
-    <?php include 'navbar.php'; ?>
+    <?php include 'Pages/Components/navbar.php'; ?>
 
     <main class="form-page-content">
         <div class="form-container">
@@ -57,7 +57,7 @@ if (!isset($_SESSION['user_id'])) {
                 }
             ?>
             
-            <form action="Handler/Post/php-create-post.php" method="POST" enctype="multipart/form-data">
+            <form action="Handler/PostHandler/create-post.php" method="POST" enctype="multipart/form-data">
                 
                 <div class="form-group">
                     <label for="post-content">Bạn đang nghĩ gì?</label>

@@ -1,9 +1,9 @@
 <?php
-require_once 'db.php';
+require_once '../../Handler/db.php';
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit;
 }
 $userId = $_SESSION['user_id'];
@@ -138,7 +138,7 @@ button.reject { background: var(--color-error); color: #fff; }
 </head>
 <body>
 
-<?php include 'navbar.php'; ?>
+<?php include 'Pages/Components/navbar.php'; ?>
 
 <div class="container">
     <div class="top-bar">
@@ -172,7 +172,7 @@ button.reject { background: var(--color-error); color: #fff; }
 </div>
 
 <script>
-const api = 'Handler/php-friend-handler.php';
+const api = 'Handler/FriendHandler/friend-handler.php';
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('search-results');
 const overlay = document.getElementById('friendOverlay');
@@ -188,7 +188,7 @@ const renderList = (selector, data, template, emptyMsg) => {
 searchInput.addEventListener('input', async e => {
   const q = e.target.value.trim();
   if (!q) return searchResults.style.display = 'none';
-  const users = await (await fetch(`search_user.php?q=${encodeURIComponent(q)}`)).json();
+  const users = await (await fetch(`Handler/FriendHandler/search_user.php?q=${encodeURIComponent(q)}`)).json();
   renderList('#search-results', users, u => `
     <div onclick="sendFriend(${u.UserId})">
       <img src="${u.AvatarPath || './uploads/default-avatar.jpg'}" onerror="this.src='./uploads/default-avatar.jpg'">

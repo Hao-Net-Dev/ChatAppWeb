@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -189,11 +188,11 @@
             
             <div class="post-feed-header">
                 <h1>Nhật ký</h1>
-                <a href="create_post.php" class="btn-create-post">Tạo bài đăng</a>
+                <a href="Handler/PostHandler/create_post.php" class="btn-create-post">Tạo bài đăng</a>
             </div>
 
             <?php
-            include 'Handler/PostHandler/php-get-posts.php';
+            include 'Handler/PostHandler/get-posts.php';
             // [CẬP NHẬT] Lấy tất cả bài đăng, LỌC RA người bị ẩn và người đã chặn
             $sql_posts = "SELECT p.PostId, p.UserId, p.Content, p.ImagePath, p.PostedAt, 
                                  u.Username, u.AvatarPath 
@@ -375,7 +374,7 @@
             const buttonWrapper = document.getElementById(`reaction-wrapper-${postId}`);
             const allButtons = buttonWrapper.querySelectorAll('.reaction-btn');
 
-            fetch('Handler/Post/php-handle-reaction.php', {
+            fetch('Handler/PostHandler/handle-reaction.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `post_id=${postId}&emote_id=${emoteId}`
@@ -445,7 +444,7 @@
             
             if (content === '') return;
 
-            fetch('Handler/Post/php-add-comment.php', {
+            fetch('Handler/PostHandler/add-comment.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `post_id=${postId}&content=${encodeURIComponent(content)}&parent_id=${parentId}`
@@ -510,7 +509,7 @@
         
         function deletePost(postId) {
             if (!confirm('Bạn có chắc chắn muốn xóa bài đăng này không?')) { return; }
-            fetch('Handler/Post/php-delete-post.php', {
+            fetch('Handler/PostHandler/delete-post.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `post_id=${postId}`
@@ -533,7 +532,7 @@
 
         function unfriendUser(userId) {
             if (!confirm('Bạn có chắc chắn muốn hủy kết bạn với người này?')) { return; }
-            fetch('Handler/Post/php-unfriend.php', {
+            fetch('Handler/PostHandler/unfriend.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `user_id=${userId}`
@@ -547,7 +546,7 @@
 
         function hideFeed(userId, postId) {
             if (!confirm('Bạn có muốn ẩn tất cả bài đăng từ người này?')) { return; }
-            fetch('Handler/Post/php-hide-feed.php', {
+            fetch('Handler/PostHandler/hide-feed.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `user_id=${userId}`
@@ -582,7 +581,7 @@
 
         function reportPost(postId) {
             if (!confirm('Bạn có chắc chắn muốn báo xấu bài đăng này?')) { return; }
-            fetch('Handler/Post/php-report-post.php', {
+            fetch('Handler/PostHandler/report-post.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `post_id=${postId}`

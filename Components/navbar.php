@@ -20,9 +20,9 @@ $current_username = $_SESSION['username'] ?? 'Guest';
     </div>
     <nav class="main-nav">
         <a href="index.php">HOME</a>
-        <a href="./Pages/PostPages/posts.php">POSTS</a>
-        <a href="chat.php">CHAT</a>
-        <a href="friends.php">FRIENDS</a>
+        <a href="PostPages/posts.php">POSTS</a>
+        <a href="ChatPages/chat.php">CHAT</a>
+        <a href="FriendPages/friends.php">FRIENDS</a>
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
             <a href="admin_dashboard.php">ADMIN</a>
         <?php endif; ?>
@@ -34,13 +34,13 @@ $current_username = $_SESSION['username'] ?? 'Guest';
                 <?php $avatar = ltrim(($_SESSION['avatar'] ?? 'images/default-avatar.jpg'), '/'); ?>
                 <img src="<?php echo htmlspecialchars($avatar); ?>" alt="avatar" class="avatar-thumb" id="avatarBtn">
                 <div class="avatar-dropdown" id="avatarDropdown">
-                    <a href="profile.php">Chỉnh sửa hồ sơ</a>
-                    <a href="logout.php">Logout</a>
+                    <a href="Pages/profile.php">Chỉnh sửa hồ sơ</a>
+                    <a href="Handler/logout.php">Logout</a>
                 </div>
             </div>
         <?php else: ?>
-            <a href="login.php" class="btn-text">Login</a>
-            <a href="register.php" class="btn-text">Register</a>
+            <a href="Pages/login.php" class="btn-text">Login</a>
+            <a href="Pages/register.php" class="btn-text">Register</a>
         <?php endif; ?>
     </div>
 </header>

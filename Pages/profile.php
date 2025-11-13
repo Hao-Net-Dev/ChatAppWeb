@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once __DIR__ . '/db.php';
+require_once 'Handler/db.php';
 
 if (!isset($_SESSION['user_id'])) {
-	header('Location: login.php');
+	header('Location: Pages/login.php');
 	exit();
 }
 
@@ -148,34 +148,11 @@ $avatar = ltrim($avatar, '/');
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Hồ sơ cá nhân</title>
-	<link rel="stylesheet" href="./css/style.css">
+	<link rel="stylesheet" href="../css/style.css">
 	<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
-	<header class="navbar">
-		<div class="logo">
-			<a href="index.php">
-				<div class="logo-circle"></div>
-				<span>ChatApp</span>
-			</a>
-		</div>
-		<nav class="main-nav">
-			<a href="index.php">HOME</a>
-			<a href="post.php">POST</a>
-			<a href="chat.php">CHAT</a>
-			<a href="friends.php">FRIENDS</a>
-		</nav>
-		<div class="auth-buttons">
-			<span class="logged-in-user">Hellu, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
-			<div class="avatar-menu">
-				<img src="<?php echo htmlspecialchars($avatar); ?>" alt="avatar" class="avatar-thumb" id="avatarBtn">
-				<div class="avatar-dropdown" id="avatarDropdown">
-					<a href="profile.php">Chỉnh sửa hồ sơ</a>
-					<a href="logout.php">Logout</a>
-				</div>
-			</div>
-		</div>
-	</header>
+	<?php include '../Components/navbar.php' ?>
 
 	<main class="form-page-content">
 		<div class="form-container" style="max-width:640px;">
