@@ -1,10 +1,78 @@
+<?php
+session_start();
+require_once '../../Handler/db.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$current_user_id = $_SESSION['user_id'];
+$current_username = $_SESSION['username'];
+$sql_current_user = "SELECT AvatarPath FROM users WHERE UserId = ?";
+$stmt_current_user = $conn->prepare($sql_current_user);
+$stmt_current_user->bind_param("i", $current_user_id);
+$stmt_current_user->execute();
+$current_user_avatar_result = $stmt_current_user->get_result();
+$current_user_avatar = $current_user_avatar_result->num_rows > 0 ? $current_user_avatar_result->fetch_assoc()['AvatarPath'] : '/images/default-avatar.jpg';
+$stmt_current_user->close();
+
+// Lấy TẤT CẢ các emotes một lần để dùng
+$emotes_map = [];
+$emotes_result = $conn->query("SELECT EmoteId, EmoteName, EmoteUnicode FROM emotes");
+while ($row = $emotes_result->fetch_assoc()) {
+    $emotes_map[$row['EmoteId']] = [
+        'name' => $row['EmoteName'],
+        'unicode' => $row['EmoteUnicode']
+    ];
+}
+
+// Hàm PHP đệ quy để render bình luận
+function renderComments($post_id, $comments_by_parent, $parent_id = NULL) {
+    if (!isset($comments_by_parent[$parent_id])) {
+        return; // Không có bình luận con
+    }
+
+    $comment_wrapper_class = $parent_id !== NULL ? 'comment-replies' : 'comment-list';
+    
+    echo "<div class='" . $comment_wrapper_class . "'>";
+
+    foreach ($comments_by_parent[$parent_id] as $comment) {
+        $comment_id = $comment['CommentId'];
+        ?>
+        <div class="comment" id="comment-<?php echo $comment_id; ?>">
+            <img src="<?php echo htmlspecialchars($comment['AvatarPath']); ?>" alt="Avatar" class="comment-avatar">
+            <div class="comment-bubble">
+                <div class="comment-content">
+                    <span class="comment-username"><?php echo htmlspecialchars($comment['Username']); ?>:</span>
+                    <span class="comment-text"><?php echo htmlspecialchars($comment['Content']); ?></span>
+                </div>
+                <div class="comment-actions">
+                    <button class="reply-btn" onclick="setReply(<?php echo $post_id; ?>, <?php echo $comment_id; ?>, '<?php echo htmlspecialchars($comment['Username']); ?>')">
+                        Trả lời
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="reply-container" id="comment-replies-<?php echo $comment_id; ?>">
+            <?php
+            // Đệ quy: render các con của bình luận này
+            renderComments($post_id, $comments_by_parent, $comment_id);
+            ?>
+        </div>
+        <?php
+    }
+    echo "</div>";
+}
+?>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nhật ký - ChatApp</title>
-    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./../../css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
     <style>
         /* (Toàn bộ CSS của bạn giữ nguyên) */
@@ -180,19 +248,50 @@
     </style>
 </head>
 <body>
-
-    <?php include 'Pages/Components/navbar.php'; ?>
+    <header class="navbar">
+    <div class="logo">
+        <a href="index.php">
+            <div class="logo-circle"></div>
+            <span>ChatApp</span>
+        </a>
+    </div>
+    <nav class="main-nav">
+        <a href="../../index.php">HOME</a>
+        <a href="../../Pages/PostPages/posts.php">POSTS</a>
+        <a href="../../Pages/ChatPages/chat.php">CHAT</a>
+        <a href="../../Pages/FriendPages/friends.php">FRIENDS</a>
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
+            <a href="../../admin_dashboard.php">ADMIN</a>
+        <?php endif; ?>
+    </nav>
+    <div class="auth-buttons">
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <span class="logged-in-user">Xin chào, <?php echo htmlspecialchars($current_username); ?></span>
+            <div class="avatar-menu">
+                <?php $avatar = ltrim(($_SESSION['avatar'] ?? 'images/default-avatar.jpg'), '/'); ?>
+                <img src="../../<?php echo htmlspecialchars($avatar); ?>" alt="avatar" class="avatar-thumb" id="avatarBtn">
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <a href="../profile.php">Chỉnh sửa hồ sơ</a>
+                    <a href="../../Handler/logout.php">Logout</a>
+                </div>
+            </div>
+        <?php else: ?>
+            <a href="Pages/login.php" class="btn-text">Login</a>
+            <a href="Pages/register.php" class="btn-text">Register</a>
+        <?php endif; ?>
+    </div>
+</header>
 
     <main class="page-content">
         <div class="post-feed">
             
             <div class="post-feed-header">
                 <h1>Nhật ký</h1>
-                <a href="Handler/PostHandler/create_post.php" class="btn-create-post">Tạo bài đăng</a>
+                <a href="../PostPages/create_post.php" class="btn-create-post">Tạo bài đăng</a>
             </div>
 
             <?php
-            include 'Handler/PostHandler/get-posts.php';
+            
             // [CẬP NHẬT] Lấy tất cả bài đăng, LỌC RA người bị ẩn và người đã chặn
             $sql_posts = "SELECT p.PostId, p.UserId, p.Content, p.ImagePath, p.PostedAt, 
                                  u.Username, u.AvatarPath 
@@ -245,7 +344,7 @@
                     </div>
                     
                     <?php if ($post['ImagePath']): ?>
-                        <img src="<?php echo htmlspecialchars($post['ImagePath']); ?>" alt="Ảnh bài đăng" class="post-image">
+                        <img src="../../<?php echo htmlspecialchars($post[ 'ImagePath']); ?>" alt="Ảnh bài đăng" class="post-image">
                     <?php endif; ?>
 
                     <div class="post-interactions">
@@ -374,7 +473,7 @@
             const buttonWrapper = document.getElementById(`reaction-wrapper-${postId}`);
             const allButtons = buttonWrapper.querySelectorAll('.reaction-btn');
 
-            fetch('Handler/PostHandler/handle-reaction.php', {
+            fetch('./../../Handler/PostHandler/handle-reaction.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `post_id=${postId}&emote_id=${emoteId}`
@@ -444,7 +543,7 @@
             
             if (content === '') return;
 
-            fetch('Handler/PostHandler/add-comment.php', {
+            fetch('./../../Handler/PostHandler/add-comment.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `post_id=${postId}&content=${encodeURIComponent(content)}&parent_id=${parentId}`
@@ -509,7 +608,7 @@
         
         function deletePost(postId) {
             if (!confirm('Bạn có chắc chắn muốn xóa bài đăng này không?')) { return; }
-            fetch('Handler/PostHandler/delete-post.php', {
+            fetch('./../../Handler/PostHandler/delete-post.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `post_id=${postId}`
@@ -532,7 +631,7 @@
 
         function unfriendUser(userId) {
             if (!confirm('Bạn có chắc chắn muốn hủy kết bạn với người này?')) { return; }
-            fetch('Handler/PostHandler/unfriend.php', {
+            fetch('./../../Handler/PostHandler/unfriend.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `user_id=${userId}`
@@ -546,7 +645,7 @@
 
         function hideFeed(userId, postId) {
             if (!confirm('Bạn có muốn ẩn tất cả bài đăng từ người này?')) { return; }
-            fetch('Handler/PostHandler/hide-feed.php', {
+            fetch('./../../Handler/PostHandler/hide-feed.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `user_id=${userId}`
@@ -567,7 +666,7 @@
 
         function blockUser(userId) {
             if (!confirm('Người này sẽ không thấy bài đăng của bạn nữa. Bạn chắc chứ?')) { return; }
-            fetch('Handler/Post/php-block-user.php', {
+            fetch('./../../Handler/Post/php-block-user.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `user_id=${userId}`
@@ -581,7 +680,7 @@
 
         function reportPost(postId) {
             if (!confirm('Bạn có chắc chắn muốn báo xấu bài đăng này?')) { return; }
-            fetch('Handler/PostHandler/report-post.php', {
+            fetch('./../../Handler/PostHandler/report-post.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `post_id=${postId}`
@@ -592,6 +691,35 @@
             })
             .catch(error => console.error('Lỗi khi báo xấu:', error));
         }
+
+                // Chờ cho toàn bộ trang được tải xong
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const avatarBtn = document.getElementById('avatarBtn');
+            const avatarDropdown = document.getElementById('avatarDropdown');
+
+            // Kiểm tra xem các phần tử này có tồn tại không
+            // (vì khách truy cập sẽ không thấy chúng)
+            if (avatarBtn && avatarDropdown) {
+                
+                // 1. Khi nhấp vào avatar
+                avatarBtn.addEventListener('click', function(event) {
+                    // Ngăn sự kiện click lan ra ngoài
+                    event.stopPropagation(); 
+                    
+                    // Hiển thị hoặc ẩn dropdown
+                    avatarDropdown.classList.toggle('open');
+                });
+
+                // 2. Khi nhấp ra ngoài (bất cứ đâu trên trang)
+                document.addEventListener('click', function(event) {
+                    // Nếu dropdown đang mở và cú click không nằm trong dropdown
+                    if (avatarDropdown.classList.contains('open') && !avatarDropdown.contains(event.target)) {
+                        avatarDropdown.classList.remove('open');
+                    }
+                });
+            }
+        });
     </script>
 
 </body>

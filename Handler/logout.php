@@ -23,6 +23,6 @@ session_unset();
 session_destroy();
 
 if ($conn) $conn->close();
-header("Location: index.php");
+header("Location: ../index.php");
 exit(); 
 ?>

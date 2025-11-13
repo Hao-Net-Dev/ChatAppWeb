@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 $stmt->close();
                 $conn->close();
-                header("Location: ../chat.php"); // Chuyển hướng đến trang chat
+                header("Location: ../Pages/ChatPages/chat.php"); // Chuyển hướng đến trang chat
                 exit();
 
             } else {
@@ -59,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         if (isset($stmt) && $stmt) $stmt->close();
         if ($conn) $conn->close();
-        header("Location: ../login.php");
+        header("Location: ../Pages/login.php");
         exit();
     }
 

@@ -64,7 +64,7 @@ try {
     $conn->close();
     
     // Chuyển hướng về trang "Nhật ký" sau khi đăng thành công
-    header("Location: ../../posts.php");
+    header("Location: ../../Pages/PostPages/posts.php");
     exit();
 
 } catch (Exception $e) {

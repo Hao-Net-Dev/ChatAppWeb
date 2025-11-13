@@ -41,7 +41,7 @@ try {
     $ext = $allowed[$mime];
     
     // Tạo thư mục uploads/messages/u_{senderId}
-    $baseDir = __DIR__ . '/../uploads/messages';
+    $baseDir = __DIR__ . '/../../uploads/messages';
     $userDir = $baseDir . '/u_' . $sender_id;
     if (!is_dir($userDir)) {
         if (!is_dir($baseDir)) { mkdir($baseDir, 0755, true); }

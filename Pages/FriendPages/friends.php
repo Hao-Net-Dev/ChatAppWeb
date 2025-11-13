@@ -7,6 +7,8 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 $userId = $_SESSION['user_id'];
+// Lấy username hiện tại nếu đã đăng nhập
+$current_username = $_SESSION['username'] ?? 'Guest';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -14,7 +16,7 @@ $userId = $_SESSION['user_id'];
 <meta charset="UTF-8">
 <title>Bạn bè & Lời mời</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="./../../css/style.css">
 <style>
 /* 🌿 PASTEL SOCIAL THEME */
 :root {
@@ -138,7 +140,39 @@ button.reject { background: var(--color-error); color: #fff; }
 </head>
 <body>
 
-<?php include 'Pages/Components/navbar.php'; ?>
+<header class="navbar">
+    <div class="logo">
+        <a href="index.php">
+            <div class="logo-circle"></div>
+            <span>ChatApp</span>
+        </a>
+    </div>
+    <nav class="main-nav">
+        <a href="../../index.php">HOME</a>
+        <a href="../../Pages/PostPages/posts.php">POSTS</a>
+        <a href="../../Pages/ChatPages/chat.php">CHAT</a>
+        <a href="../../Pages/FriendPages/friends.php">FRIENDS</a>
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
+            <a href="../../admin_dashboard.php">ADMIN</a>
+        <?php endif; ?>
+    </nav>
+    <div class="auth-buttons">
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <span class="logged-in-user">Xin chào, <?php echo htmlspecialchars($current_username); ?></span>
+            <div class="avatar-menu">
+                <?php $avatar = ltrim(($_SESSION['avatar'] ?? 'images/default-avatar.jpg'), '/'); ?>
+                <img src="<?php echo htmlspecialchars($avatar); ?>" alt="avatar" class="avatar-thumb" id="avatarBtn">
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <a href="Pages/profile.php">Chỉnh sửa hồ sơ</a>
+                    <a href="../../Handler/logout.php">Logout</a>
+                </div>
+            </div>
+        <?php else: ?>
+            <a href="Pages/login.php" class="btn-text">Login</a>
+            <a href="Pages/register.php" class="btn-text">Register</a>
+        <?php endif; ?>
+    </div>
+</header>
 
 <div class="container">
     <div class="top-bar">
@@ -172,7 +206,7 @@ button.reject { background: var(--color-error); color: #fff; }
 </div>
 
 <script>
-const api = 'Handler/FriendHandler/friend-handler.php';
+const api = './../../Handler/FriendHandler/friend-handler.php';
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('search-results');
 const overlay = document.getElementById('friendOverlay');
@@ -188,7 +222,7 @@ const renderList = (selector, data, template, emptyMsg) => {
 searchInput.addEventListener('input', async e => {
   const q = e.target.value.trim();
   if (!q) return searchResults.style.display = 'none';
-  const users = await (await fetch(`Handler/FriendHandler/search_user.php?q=${encodeURIComponent(q)}`)).json();
+  const users = await (await fetch(`./../../Handler/FriendHandler/search_user.php?q=${encodeURIComponent(q)}`)).json();
   renderList('#search-results', users, u => `
     <div onclick="sendFriend(${u.UserId})">
       <img src="${u.AvatarPath || './uploads/default-avatar.jpg'}" onerror="this.src='./uploads/default-avatar.jpg'">
@@ -315,7 +349,7 @@ setInterval(loadFriends,5000);
                 });
             }
         });
-
+        
 </script>
 </body>
 </html>
